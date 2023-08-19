@@ -14,9 +14,13 @@ const config = {
    * @see https://github.com/vercel/next.js/issues/41980
    */
   i18n: {
-    locales: ["en"],
+    locales: ["en", "es"],
     defaultLocale: "en",
   },
+  images: {
+    domains: ["images.clerk.dev"]
+  },
+
 };
 
 export default config;
