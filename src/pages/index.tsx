@@ -1,8 +1,14 @@
 import { SignInButton, SignOutButton, useUser } from "@clerk/nextjs";
 import Head from "next/head";
+import { api } from "~/utils/api";
 
 export default function Home() {
   const user = useUser()
+
+  const { data } = api.post.getAll.useQuery()
+  console.log(data);
+
+
 
   return (
     <>
@@ -15,6 +21,9 @@ export default function Home() {
         <div>
           {!user.isSignedIn && <SignInButton />}
           {!!user.isSignedIn && <SignOutButton />}
+        </div>
+        <div>
+          {data?.map(post => (<div key={post.id}>{post.content}</div>))}
         </div>
       </main>
     </>
