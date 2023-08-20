@@ -7,15 +7,19 @@ import relativeTime from 'dayjs/plugin/relativeTime'
 import Image from "next/image";
 import { LoadingPage } from "~/components/loading";
 import { TRPCError } from "@trpc/server";
+import { useState } from "react";
 
 dayjs.extend(relativeTime)
 
 const CreatePostWizard = () => {
+  const [post, setPost] = useState('')
   const { user } = useUser()
+
 
   if (!user) return null
 
-  console.log(user)
+  const { mutate } = api.post.create.useMutation()
+
   return (
     <div className="flex w-full gap-3">
       <Image
@@ -25,7 +29,14 @@ const CreatePostWizard = () => {
         width={56}
         height={56}
       />
-      <input placeholder="Type some emojis!" className="grow bg-transparent outline-none" />
+      <input
+        placeholder="Type some emojis!"
+        className="grow bg-transparent outline-none"
+        value={post}
+        type="text"
+        onChange={input => setPost(input.currentTarget.value)}
+      />
+      <button onClick={() => mutate({ content: post })}>Enviar</button>
     </div>
   )
 }

@@ -6,10 +6,9 @@
  * TL;DR - This is where all the tRPC server stuff is created and plugged in. The pieces you will
  * need to use are documented accordingly near the end.
  */
-import { getAuth } from "@clerk/nextjs/dist/types/server-helpers.server";
+import { getAuth } from "@clerk/nextjs/server";
 import { TRPCError, initTRPC } from "@trpc/server";
 import { type CreateNextContextOptions } from "@trpc/server/adapters/next";
-import { use } from "react";
 import superjson from "superjson";
 import { ZodError } from "zod";
 import { prisma } from "~/server/db";
@@ -27,11 +26,11 @@ import { prisma } from "~/server/db";
 export const createTRPCContext = (opts: CreateNextContextOptions) => {
   const { req } = opts
   const sessionAuth = getAuth(req)
-  const user = sessionAuth.user
+  const userId = sessionAuth.userId
 
   return {
     prisma,
-    currentUser: user
+    userId
   };
 };
 
@@ -82,11 +81,11 @@ export const publicProcedure = t.procedure;
 
 
 const enforceUserIsAuthed = t.middleware(async ({ ctx, next }) => {
-  if (!ctx.currentUser) throw new TRPCError({ code: "UNAUTHORIZED", message: "User not authenticated" })
+  if (!ctx.userId) throw new TRPCError({ code: "UNAUTHORIZED", message: "User not authenticated" })
 
   return next({
     ctx: {
-      currentUser: ctx.currentUser
+      userId: ctx.userId
     }
   })
 })
