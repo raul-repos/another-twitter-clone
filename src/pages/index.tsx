@@ -8,6 +8,7 @@ import Image from "next/image";
 import { LoadingPage, LoadingSpinner } from "~/components/loading";
 import { TRPCError } from "@trpc/server";
 import { useState } from "react";
+import toast from "react-hot-toast";
 
 dayjs.extend(relativeTime)
 
@@ -23,6 +24,14 @@ const CreatePostWizard = () => {
     onSuccess: async () => {
       setPost('')
       await ctx.post.getAll.invalidate()
+    },
+    onError: (e) => {
+      const errorMessage = e.data?.zodError?.fieldErrors.content
+      if (errorMessage?.[0]) {
+        toast.error(errorMessage[0])
+      } else {
+        toast.error('Failed to post! Please try again later.')
+      }
     }
   })
 
