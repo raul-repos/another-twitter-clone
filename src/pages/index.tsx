@@ -9,6 +9,7 @@ import { LoadingPage, LoadingSpinner } from "~/components/loading";
 import { TRPCError } from "@trpc/server";
 import { useState } from "react";
 import toast from "react-hot-toast";
+import Link from "next/link";
 
 dayjs.extend(relativeTime)
 
@@ -90,8 +91,12 @@ const PostView = (props: PostWithUser) => {
       />
       <div className="flex flex-col text-slate-400">
         <div className="flex">
-          <span>{`@${author.username}‏‏‎ ‎`}</span>
-          <span className="font-thin">{`published ${dayjs(post.createdAt).fromNow()}`}</span>
+          <Link href={`@${author.username}`}>
+            <span>{`@${author.username}‏‏‎ ‎`}</span>
+          </Link>
+          <Link href={`/post/${post.id}`}>
+            <span className="font-thin">{`published ${dayjs(post.createdAt).fromNow()}`}</span>
+          </Link>
         </div>
         <div>
           {post.content}
