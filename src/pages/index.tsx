@@ -5,7 +5,7 @@ import type { RouterOutputs } from "~/utils/api"
 import dayjs from "dayjs";
 import relativeTime from 'dayjs/plugin/relativeTime'
 import Image from "next/image";
-import { LoadingPage } from "~/components/loading";
+import { LoadingPage, LoadingSpinner } from "~/components/loading";
 import { TRPCError } from "@trpc/server";
 import { useState } from "react";
 
@@ -40,10 +40,29 @@ const CreatePostWizard = () => {
         className="grow bg-transparent outline-none"
         value={post}
         type="text"
-        onChange={input => setPost(input.currentTarget.value)}
+        onChange={e => setPost(e.currentTarget.value)}
+        onKeyDown={e => {
+          if (e.key === 'Enter') {
+            e.preventDefault()
+            if (post !== '') {
+              mutate({ content: post })
+            }
+          }
+        }}
         disabled={isPosting}
       />
-      <button onClick={() => mutate({ content: post })}>Enviar</button>
+
+      {post !== '' && !isPosting && (
+        <button onClick={() => mutate({ content: post })}
+        >Post</button>
+      )}
+
+      {isPosting && (
+        <div className="flex items-center justify-center">
+          <LoadingSpinner size={24} />
+        </div>
+      )}
+
     </div>
   )
 }
