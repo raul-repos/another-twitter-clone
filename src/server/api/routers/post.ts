@@ -5,7 +5,46 @@ import { createTRPCRouter, privateProcedure, publicProcedure } from "~/server/ap
 import { Ratelimit } from "@upstash/ratelimit"; // for deno: see above
 import { Redis } from "@upstash/redis";
 import { filterUserForClient } from "~/server/helpers/filterUserForClient";
+import type { Post } from "@prisma/client";
 
+
+const addUserDataToPosts = async (posts: Post[]) => {
+  const userId = posts.map((post) => post.authorId);
+  const users = (
+    await clerkClient.users.getUserList({
+      userId: userId,
+      limit: 110,
+    })
+  ).map(filterUserForClient);
+
+  return posts.map((post) => {
+    const author = users.find((user) => user.id === post.authorId);
+
+    if (!author) {
+      console.error("AUTHOR NOT FOUND", post);
+      throw new TRPCError({
+        code: "INTERNAL_SERVER_ERROR",
+        message: `Author for post not found. POST ID: ${post.id}, USER ID: ${post.authorId}`,
+      });
+    }
+    if (!author.username) {
+      // user the ExternalUsername
+
+      throw new TRPCError({
+        code: "INTERNAL_SERVER_ERROR",
+        message: `Author has no GitHub Account: ${author.id}`,
+      });
+
+    }
+    return {
+      post,
+      author: {
+        ...author,
+        username: author.username ?? "(username not found)",
+      },
+    };
+  });
+};
 
 // Create a new ratelimiter, that allows 2 requests per minute
 const ratelimit = new Ratelimit({
@@ -50,6 +89,8 @@ export const postRouter = createTRPCRouter({
     })
 
   }),
+  getPostByUserId: publicProcedure.input(z.object({ userId: z.string() })).query(({ ctx, input }) => ctx.prisma.post.findMany({ where: { authorId: input.userId } }).then(addUserDataToPosts)),
+
   create: privateProcedure.input(z.object({
     content: z.string().emoji().min(1).max(280)
   })).mutation(async ({ ctx, input }) => {
