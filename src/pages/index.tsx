@@ -18,7 +18,13 @@ const CreatePostWizard = () => {
 
   if (!user) return null
 
-  const { mutate } = api.post.create.useMutation()
+  const ctx = api.useContext()
+  const { mutate, isLoading: isPosting } = api.post.create.useMutation({
+    onSuccess: async () => {
+      setPost('')
+      await ctx.post.getAll.invalidate()
+    }
+  })
 
   return (
     <div className="flex w-full gap-3">
@@ -35,6 +41,7 @@ const CreatePostWizard = () => {
         value={post}
         type="text"
         onChange={input => setPost(input.currentTarget.value)}
+        disabled={isPosting}
       />
       <button onClick={() => mutate({ content: post })}>Enviar</button>
     </div>
